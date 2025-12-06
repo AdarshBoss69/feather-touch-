@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feather Touch Dermatology | Dr. Vaishali Lokhande</title>
+    
+    <!-- Tailwind CSS (Styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM (Core Framework) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "lucide-react": "https://esm.sh/lucide-react@0.303.0"
+        }
+      }
+    </script>
+    
+    <!-- Babel (To understand JSX in browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Custom Font - Serif */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        
+        /* Smooth Scrolling */
+        html { scroll-behavior: smooth; }
+        
+        /* Animation Utilities */
+        .animate-bounce-slow { animation: bounce 3s infinite; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-5%); }
+            50% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800 antialiased selection:bg-teal-200 selection:text-teal-900">
+    <div id="root"></div>
+
+    <!-- MAIN REACT APP SCRIPT -->
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { 
+          Phone, Calendar, MapPin, Menu, X, Star, Award, Clock, ChevronRight, 
+          CheckCircle, ArrowRight, Instagram, Facebook, MessageCircle, ShieldCheck, 
+          Sparkles, ArrowUpRight, User, Mail, Stethoscope 
+        } from 'lucide-react';
+
+        /* ========================================
+           CONFIGURATION & DATA
+           ======================================== */
+
+        const BUSINESS_INFO = {
+          name: "Feather Touch",
+          doctor: "Dr. Vaishali Lokhande",
+          title: "Dermatologist & Cosmetologist",
+          phone: "+919876543210", 
+          whatsapp_msg: "Hello, I would like to book a premium consultation at Feather Touch.",
+          address: "Building 3, Neetu Maya Society, Lane-A, Koregaon Park, Pune, MH 411001",
+          hours: "Mon - Sat: 10:00 AM - 6:30 PM",
+          rating: "5.0",
+          reviews: "294",
+          award: "Inspirational Super Women Award – Best Woman Doctor",
+          logo_path: "./logo.png" // Assumes logo.png is in the same folder
+        };
+
+        const REVIEWS = [
+          { name: "Priya Deshmukh", role: "Software Engineer", text: "Dr. Vaishali is magical. My acne scars haunted me for years. After 3 sessions, my skin is breathing again.", stars: 5 },
+          { name: "Amit Kulkarni", role: "Entrepreneur", text: "Best dermatologist in Koregaon Park. The clinic is spotless, and the staff is very polite. Laser results are fantastic.", stars: 5 },
+          { name: "Sarah Jenkins", role: "Model", text: "I flew in from Mumbai just to see her. The 'Feather Touch' name is real—she is so gentle with procedures.", stars: 5 }
+        ];
+
+        const SERVICES = [
+          {
+            id: "acne-treatment",
+            title: "Acne & Scar Protocols",
+            shortDesc: "Advanced bacterial control and collagen remodeling for crystal clear skin.",
+            fullDesc: "Our acne protocols address the root cause of breakouts—bacteria, oil production, and inflammation. For scars, we utilize fractional lasers and subcision to remodel collagen deeply.",
+            process: ["3D Skin Analysis", "Deep Pore Detox", "Laser/Peel Application", "Bio-Light Therapy"],
+            benefits: ["Zero active acne", "Smoother texture", "Pore reduction"],
+            duration: "45 - 60 Min",
+            downtime: "Minimal Redness (24h)",
+            results: "Visible in 2-3 sessions",
+            image: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=800"
+          },
+          {
+            id: "anti-aging",
+            title: "Non-Surgical Facelift",
+            shortDesc: "Turn back time with FDA-approved fillers, threads, and HIFU technology.",
+            fullDesc: "We focus on 'Graceful Aging'. Using precision-placed fillers and HIFU energy, we lift sagging tissue and restore lost volume without a single surgical incision.",
+            process: ["Facial Mapping", "Numbing", "Precision Treatment", "Cryo-Cooling"],
+            benefits: ["Instant lift", "Defined jawline", "Erased wrinkles"],
+            duration: "60 - 90 Min",
+            downtime: "Swelling (1-2 Days)",
+            results: "Immediate & Progressive",
+            image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80&w=800"
+          },
+          {
+            id: "laser-hair",
+            title: "Laser Hair Reduction",
+            shortDesc: "The Gold Standard in pain-free, permanent hair reduction for Indian skin.",
+            fullDesc: "Experience silky smooth skin. Our triple-wavelength diode laser targets hair follicles at different depths, ensuring safety and efficacy for all skin tones.",
+            process: ["Area Prep", "Cooling Gel", "Gliding Laser", "Moisturizing"],
+            benefits: ["Permanent reduction", "No ingrowns", "Soft skin"],
+            duration: "15 - 120 Min",
+            downtime: "None",
+            results: "6-8 Sessions required",
+            image: "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&q=80&w=800"
+          },
+          {
+            id: "pigmentation",
+            title: "Melasma & Brightening",
+            shortDesc: "Erase sun damage and hormonal pigmentation with Q-Switched lasers.",
+            fullDesc: "We treat stubborn melasma and uneven tone using lasers that shatter pigment particles without damaging the surrounding skin surface.",
+            process: ["UV Analysis", "Laser Toning", "Brightening Peel", "Serum Infusion"],
+            benefits: ["Even tone", "Glow", "Spot reduction"],
+            duration: "30 - 45 Min",
+            downtime: "None (Lunchtime)",
+            results: "Progressive lightening",
+            image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=800&auto=format&fit=crop"
+          },
+          {
+            id: "hair-fall",
+            title: "PRP Hair Restoration",
+            shortDesc: "Regrow your hair naturally using your body's own powerful growth factors.",
+            fullDesc: "Platelet-Rich Plasma (PRP) involves concentrating your blood's platelets and injecting them into the scalp to wake up dormant follicles.",
+            process: ["Blood Draw", "Centrifuge", "Micro-injection", "Scalp Laser"],
+            benefits: ["Thicker hair", "Reduced fall", "New growth"],
+            duration: "60 Min",
+            downtime: "None",
+            results: "3-4 Months",
+            image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=800"
+          },
+          {
+            id: "clinical",
+            title: "Clinical Dermatology",
+            shortDesc: "Expert medical management for Eczema, Psoriasis, and Allergies.",
+            fullDesc: "Dr. Vaishali provides compassionate, science-backed diagnosis and treatment plans for chronic skin conditions affecting adults and children.",
+            process: ["Consultation", "Dermoscopy", "Diagnosis", "Prescription"],
+            benefits: ["Symptom relief", "Disease control", "Better quality of life"],
+            duration: "20 Min Consult",
+            downtime: "None",
+            results: "Variable",
+            image: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&q=80&w=800"
+          }
+        ];
+
+        const FAQS = [
+          { q: "Is laser hair removal safe for Indian skin?", a: "Absolutely. We use Diode lasers specifically calibrated for Indian skin tones, ensuring safety and efficacy without burns." },
+          { q: "How do I book an appointment?", a: "You can click the 'Book Appointment' button, call us directly, or send a WhatsApp message. We require a prior appointment." },
+          { q: "What is the consultation fee?", a: "Our fees reflect specialist care. Please contact us on WhatsApp for the current consultation charges." },
+          { q: "Do you treat children?", a: "Yes, Dr. Vaishali is experienced in pediatric dermatology for common issues like eczema and infections." }
+        ];
+
+        const CLINIC_IMAGES = [
+          "https://images.unsplash.com/photo-1629909613654-28e377c37b53?auto=format&fit=crop&q=80&w=800",
+          "https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&q=80&w=800",
+          "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800",
+          "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80&w=800"
+        ];
+
+        // --- COMPONENTS ---
+
+        const useReveal = () => {
+          const [isVisible, setIsVisible] = useState(false);
+          const ref = useRef(null);
+          useEffect(() => {
+            const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true); }, { threshold: 0.1 });
+            if (ref.current) observer.observe(ref.current);
+            return () => { if (ref.current) observer.unobserve(ref.current); };
+          }, []);
+          return [ref, isVisible];
+        };
+
+        const RevealSection = ({ children, className = "" }) => {
+          const [ref, isVisible] = useReveal();
+          return <div ref={ref} className={`transform transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} ${className}`}>{children}</div>;
+        };
+
+        const Button = ({ children, variant = "primary", onClick, className = "", icon: Icon, disabled }) => {
+          const base = "inline-flex items-center justify-center px-8 py-4 rounded-full font-medium transition-all duration-300 transform active:scale-95 shadow-lg tracking-wide text-sm md:text-base";
+          const variants = {
+            primary: "bg-teal-700 text-white hover:bg-teal-800 hover:shadow-teal-200/50 shadow-teal-900/10",
+            secondary: "bg-white text-slate-800 border border-slate-200 hover:bg-slate-50 hover:border-slate-300",
+            gold: "bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-amber-200/50",
+            outline: "bg-transparent border-2 border-teal-700 text-teal-700 hover:bg-teal-50"
+          };
+          return (
+            <button disabled={disabled} onClick={onClick} className={`${base} ${variants[variant]} ${className} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}>
+              {Icon && <Icon className="w-5 h-5 mr-2" />}
+              {children}
+            </button>
+          );
+        };
+
+        const SectionHeading = ({ title, subtitle, align = "center", dark = false }) => (
+          <div className={`mb-16 ${align === "left" ? "text-left" : "text-center"}`}>
+            <h2 className={`text-4xl md:text-5xl font-serif mb-6 ${dark ? 'text-white' : 'text-slate-900'} leading-tight`}>{title}</h2>
+            <div className={`h-1.5 w-24 bg-teal-600 rounded-full mb-6 ${align === "center" ? "mx-auto" : ""}`}></div>
+            {subtitle && <p className={`text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed ${dark ? 'text-teal-100' : 'text-slate-600'}`}>{subtitle}</p>}
+          </div>
+        );
+
+        // --- MAIN APP ---
+
+        function App() {
+          const [view, setView] = useState('home');
+          const [activeService, setActiveService] = useState(null);
+          const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+          const [scrolled, setScrolled] = useState(false);
+          const [bookingStatus, setBookingStatus] = useState('idle');
+
+          useEffect(() => {
+            const handleScroll = () => setScrolled(window.scrollY > 50);
+            window.addEventListener('scroll', handleScroll);
+            return () => window.removeEventListener('scroll', handleScroll);
+          }, []);
+
+          useEffect(() => {
+            window.scrollTo(0, 0);
+            setMobileMenuOpen(false);
+          }, [view, activeService]);
+
+          const openWhatsApp = () => {
+            const url = `https://wa.me/${BUSINESS_INFO.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(BUSINESS_INFO.whatsapp_msg)}`;
+            window.open(url, '_blank');
+          };
+          const openCall = () => window.location.href = `tel:${BUSINESS_INFO.phone}`;
+          const openMap = () => window.open("https://goo.gl/maps/placeholder", "_blank");
+
+          const handleBooking = (e) => {
+            e.preventDefault();
+            setBookingStatus('loading');
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            const msg = `*New Appt Request* ✨\n\nName: ${data.name}\nPhone: ${data.phone}\nService: ${data.concern}\nDate: ${data.date}\n\nPlease confirm slot.`;
+            setTimeout(() => {
+              const url = `https://wa.me/${BUSINESS_INFO.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`;
+              window.open(url, '_blank');
+              setBookingStatus('success');
+            }, 1500);
+          };
+
+          const HomeView = () => (
+            <>
+              <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-slate-50">
+                <div className="absolute top-0 right-0 w-[40%] h-full bg-teal-100/30 blur-3xl rounded-l-full"></div>
+                <div className="container mx-auto px-6 relative z-10">
+                  <div className="flex flex-col lg:flex-row items-center gap-16">
+                    <div className="lg:w-1/2 space-y-10 animate-in slide-in-from-left duration-1000">
+                      <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-teal-100 shadow-sm">
+                        <Award className="w-5 h-5 text-amber-500" />
+                        <span className="text-sm font-semibold tracking-wide text-slate-800 uppercase">Award Winning Clinic</span>
+                      </div>
+                      <h1 className="text-5xl lg:text-7xl font-serif text-slate-900 leading-[1.1] tracking-tight">Refining Beauty <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-teal-500 italic">With Science</span></h1>
+                      <p className="text-xl text-slate-600 leading-relaxed max-w-lg font-light">Dr. Vaishali Lokhande combines medical precision with an artist’s eye to reveal your skin’s true potential. Experience Koregaon Park's finest dermatology.</p>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <Button onClick={() => setView('contact')} icon={Calendar}>Book Appointment</Button>
+                        <Button variant="secondary" onClick={() => setView('services')} icon={Sparkles}>Our Treatments</Button>
+                      </div>
+                      <div className="flex items-center gap-6 pt-6 border-t border-slate-200/60">
+                        <div className="bg-amber-50 px-4 py-2 rounded-xl flex flex-col items-center border border-amber-100">
+                          <span className="text-3xl font-serif font-bold text-slate-900">5.0</span>
+                          <div className="flex text-amber-500">
+                            {[1,2,3,4,5].map(i => <Star key={i} className="w-3 h-3 fill-current" />)}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500 font-medium">Google Reviews</p>
+                          <p className="text-slate-900 font-bold text-lg">{BUSINESS_INFO.reviews} Verified Patients</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="lg:w-1/2 relative animate-in fade-in zoom-in duration-1000 delay-200">
+                      <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-[8px] border-white h-[500px]">
+                        <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=1000" alt="Clinic Interior" className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000" />
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-10 text-white">
+                          <p className="font-serif text-3xl mb-1">State-of-the-Art Facility</p>
+                          <p className="opacity-90 font-light">Koregaon Park, Pune</p>
+                        </div>
+                      </div>
+                      <div className="absolute -top-10 -right-10 bg-white p-6 rounded-2xl shadow-xl animate-bounce-slow hidden md:block">
+                         <div className="flex items-center gap-4">
+                           <div className="bg-teal-50 p-4 rounded-full">
+                             <ShieldCheck className="w-8 h-8 text-teal-600" />
+                           </div>
+                           <div>
+                             <p className="text-slate-400 text-xs uppercase tracking-wider font-bold">Experience</p>
+                             <p className="text-slate-900 text-2xl font-serif font-bold">15+ Years</p>
+                           </div>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="py-24 bg-white">
+                <div className="container mx-auto px-6">
+                  <SectionHeading title="Curated Treatments" subtitle="Holistic skin solutions tailored to your unique biology." />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {SERVICES.slice(0, 3).map((service, i) => (
+                      <RevealSection key={service.id} className="group cursor-pointer" >
+                        <div className="relative h-[400px] rounded-[2rem] overflow-hidden shadow-lg" onClick={() => { setActiveService(service); setView('service-detail'); }}>
+                          <img src={service.image} alt={service.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-teal-950/90 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-100"></div>
+                          <div className="absolute bottom-0 p-8 text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <h3 className="text-2xl font-serif mb-2">{service.title}</h3>
+                            <p className="text-slate-200 text-sm mb-6 line-clamp-2">{service.shortDesc}</p>
+                            <div className="flex items-center text-amber-400 text-sm font-bold uppercase tracking-wider">Learn More <ArrowRight className="w-4 h-4 ml-2" /></div>
+                          </div>
+                        </div>
+                      </RevealSection>
+                    ))}
+                  </div>
+                  <div className="mt-12 text-center"><Button variant="outline" onClick={() => setView('services')}>View Full Menu</Button></div>
+                </div>
+              </section>
+
+              <section className="py-24 bg-teal-900 text-white relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                <div className="container mx-auto px-6 relative z-10">
+                  <div className="flex flex-col lg:flex-row items-center gap-16">
+                    <div className="lg:w-1/2">
+                      <RevealSection>
+                        <div className="relative">
+                          <div className="absolute -inset-4 border border-teal-500/30 rounded-3xl rotate-3"></div>
+                          <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1000" alt="Consultation" className="relative rounded-2xl shadow-2xl w-full grayscale hover:grayscale-0 transition-all duration-700" />
+                        </div>
+                      </RevealSection>
+                    </div>
+                    <div className="lg:w-1/2 space-y-8">
+                      <RevealSection>
+                        <h2 className="text-4xl lg:text-5xl font-serif leading-tight">"Skin health is a journey, <span className="text-teal-300 italic">not a transaction.</span>"</h2>
+                        <div className="h-1 w-20 bg-amber-500 rounded-full"></div>
+                        <p className="text-teal-50/80 text-lg leading-relaxed font-light">At Feather Touch, we reject the 'one-size-fits-all' approach. Dr. Vaishali Lokhande believes in listening to your skin's story before picking up a laser. Our clinic is a sanctuary where medical ethics meet luxury comfort.</p>
+                        <ul className="space-y-4">
+                          {["US-FDA Approved Technologies", "Minimal Downtime Protocols", "Transparent Pricing Policy"].map((item, i) => (
+                            <li key={i} className="flex items-center text-lg"><CheckCircle className="w-6 h-6 text-amber-500 mr-4" /> {item}</li>
+                          ))}
+                        </ul>
+                        <div className="pt-8"><Button variant="gold" onClick={() => setView('about')}>Read Our Philosophy</Button></div>
+                      </RevealSection>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="py-24 bg-slate-50">
+                <div className="container mx-auto px-6">
+                  <SectionHeading title="Patient Stories" subtitle="Join 10,000+ satisfied patients in Pune." />
+                  <div className="grid md:grid-cols-3 gap-8">
+                    {REVIEWS.map((review, i) => (
+                      <RevealSection key={i}>
+                        <div className="bg-white p-10 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 h-full flex flex-col">
+                          <div className="flex text-amber-500 mb-6">{[1,2,3,4,5].map(x => <Star key={x} className="w-5 h-5 fill-current" />)}</div>
+                          <p className="text-slate-600 text-lg italic mb-8 flex-grow leading-relaxed">"{review.text}"</p>
+                          <div className="flex items-center gap-4 border-t border-slate-100 pt-6">
+                            <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold text-xl">{review.name[0]}</div>
+                            <div>
+                              <p className="font-bold text-slate-900">{review.name}</p>
+                              <p className="text-xs text-slate-400 uppercase tracking-wide">{review.role}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </RevealSection>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            </>
+          );
+
+          const ServiceDetailView = () => (
+            <div className="min-h-screen bg-white pt-32 pb-24">
+              {activeService ? (
+                <div className="container mx-auto px-6 max-w-6xl">
+                   <button onClick={() => setView('services')} className="group flex items-center text-slate-500 mb-10 hover:text-teal-700 transition-colors">
+                     <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center mr-3 group-hover:border-teal-700"><ArrowRight className="w-5 h-5 rotate-180" /></div>
+                     <span className="font-medium">Back to Menu</span>
+                   </button>
+                   <div className="grid lg:grid-cols-2 gap-16 items-start">
+                     <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl">
+                       <img src={activeService.image} alt={activeService.title} className="w-full h-auto object-cover" />
+                       <div className="absolute inset-0 bg-gradient-to-t from-teal-900/80 to-transparent flex items-end p-10">
+                         <div>
+                           <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">Premium Treatment</span>
+                           <h1 className="text-4xl lg:text-5xl font-serif text-white mb-2">{activeService.title}</h1>
+                         </div>
+                       </div>
+                     </div>
+                     <div className="space-y-10">
+                       <div>
+                         <h3 className="text-2xl font-serif text-slate-900 mb-4">Treatment Overview</h3>
+                         <p className="text-lg text-slate-600 leading-relaxed">{activeService.fullDesc}</p>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                         {[{ label: "Duration", val: activeService.duration, icon: Clock }, { label: "Downtime", val: activeService.downtime, icon: Sparkles }, { label: "Results", val: activeService.results, icon: CheckCircle }].map((stat, i) => (
+                           <div key={i} className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                             <stat.icon className="w-6 h-6 text-teal-600 mb-2" />
+                             <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">{stat.label}</p>
+                             <p className="text-slate-900 font-medium">{stat.val}</p>
+                           </div>
+                         ))}
+                       </div>
+                       <div className="bg-teal-50 p-8 rounded-3xl border border-teal-100">
+                         <h3 className="font-serif text-xl text-teal-900 mb-6">The Process</h3>
+                         <div className="space-y-4">
+                           {activeService.process.map((step, i) => (
+                             <div key={i} className="flex items-center bg-white p-4 rounded-xl shadow-sm">
+                               <span className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm mr-4">{i+1}</span>
+                               <span className="text-slate-700 font-medium">{step}</span>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                       <div className="flex gap-4 pt-4">
+                         <Button onClick={() => setView('contact')} className="flex-1">Book This Treatment</Button>
+                         <Button variant="secondary" onClick={openWhatsApp} icon={MessageCircle}>Ask Questions</Button>
+                       </div>
+                     </div>
+                   </div>
+                </div>
+              ) : setView('services')}
+            </div>
+          );
+
+          const ContactView = () => (
+            <div className="min-h-screen pt-32 pb-24 bg-slate-50">
+              <div className="container mx-auto px-6">
+                <SectionHeading title="Begin Your Journey" subtitle="Visit our sanctuary in Koregaon Park." />
+                <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                  <div className="space-y-8">
+                    <div className="bg-white p-8 rounded-[2rem] shadow-lg border border-slate-100">
+                      <h3 className="text-2xl font-serif text-slate-900 mb-8">Contact Details</h3>
+                      <div className="space-y-6">
+                        <div className="flex items-start">
+                          <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 mr-5 shrink-0"><MapPin className="w-6 h-6" /></div>
+                          <div><p className="text-sm text-slate-400 font-bold uppercase tracking-wider mb-1">Address</p><p className="text-slate-800 text-lg leading-relaxed">{BUSINESS_INFO.address}</p><button onClick={openMap} className="text-amber-600 font-medium text-sm mt-2 flex items-center hover:underline">Get Directions <ArrowUpRight className="w-3 h-3 ml-1" /></button></div>
+                        </div>
+                        <div className="flex items-start">
+                          <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 mr-5 shrink-0"><Phone className="w-6 h-6" /></div>
+                          <div><p className="text-sm text-slate-400 font-bold uppercase tracking-wider mb-1">Phone</p><p className="text-slate-800 text-lg">{BUSINESS_INFO.phone}</p><p className="text-slate-500 text-sm">Available on WhatsApp</p></div>
+                        </div>
+                        <div className="flex items-start">
+                          <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 mr-5 shrink-0"><Clock className="w-6 h-6" /></div>
+                          <div><p className="text-sm text-slate-400 font-bold uppercase tracking-wider mb-1">Hours</p><p className="text-slate-800 text-lg">{BUSINESS_INFO.hours}</p><p className="text-slate-500 text-sm">Closed on Sundays</p></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="h-64 rounded-[2rem] overflow-hidden shadow-lg border-4 border-white">
+                       <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" className="w-full h-full object-cover" alt="Map Location" />
+                    </div>
+                  </div>
+                  <div className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden">
+                    {bookingStatus === 'success' ? (
+                      <div className="absolute inset-0 bg-teal-700 flex flex-col items-center justify-center text-white p-10 text-center animate-in fade-in zoom-in">
+                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-2xl"><CheckCircle className="w-10 h-10 text-teal-600" /></div>
+                        <h3 className="text-3xl font-serif mb-4">Request Sent!</h3>
+                        <p className="text-teal-100 mb-8 text-lg">We are opening WhatsApp to finalize your booking with our reception team.</p>
+                        <Button variant="secondary" onClick={() => { setBookingStatus('idle'); setView('home'); }}>Return Home</Button>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleBooking} className="space-y-6">
+                        <div><h3 className="text-3xl font-serif text-slate-900 mb-2">Book Appointment</h3><p className="text-slate-500">Fill details below to check availability.</p></div>
+                        <div className="space-y-4">
+                          <div className="relative"><User className="absolute left-4 top-4 w-5 h-5 text-slate-400" /><input name="name" required type="text" placeholder="Full Name" className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all" /></div>
+                          <div className="relative"><Phone className="absolute left-4 top-4 w-5 h-5 text-slate-400" /><input name="phone" required type="tel" placeholder="Phone Number" className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all" /></div>
+                          <div className="relative">
+                            <Stethoscope className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
+                            <select name="concern" className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none text-slate-600">
+                              <option>Select Concern...</option>
+                              {SERVICES.map(s => <option key={s.id} value={s.title}>{s.title}</option>)}
+                              <option>Other / Consultation</option>
+                            </select>
+                          </div>
+                          <div className="relative"><Calendar className="absolute left-4 top-4 w-5 h-5 text-slate-400" /><input name="date" type="date" className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all text-slate-600" /></div>
+                        </div>
+                        <Button className="w-full text-lg shadow-xl shadow-teal-100" disabled={bookingStatus === 'loading'}>{bookingStatus === 'loading' ? 'Processing...' : 'Confirm Request'}</Button>
+                        <p className="text-center text-xs text-slate-400 mt-4"><ShieldCheck className="w-3 h-3 inline mr-1" />Your medical data is secure and encrypted.</p>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+
+          const LandingPageView = () => (
+            <div className="min-h-screen bg-white">
+              <div className="bg-slate-900 text-white pt-40 pb-24 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-900 via-slate-900 to-slate-900"></div>
+                <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
+                   <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 mb-8"><span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span><span className="text-sm font-medium tracking-widest uppercase">Accepting New Patients</span></div>
+                   <h1 className="text-5xl lg:text-7xl font-serif mb-8 leading-tight">The Future of <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-200 to-teal-400">Skin Health</span> is Here.</h1>
+                   <p className="text-slate-300 text-xl mb-12 max-w-2xl mx-auto leading-relaxed font-light">Join 10,000+ patients who trust Feather Touch for ethical, results-driven dermatology. No upsells. Just science.</p>
+                   <div className="flex flex-col sm:flex-row justify-center gap-6"><Button variant="gold" className="px-10 py-5 text-lg" onClick={() => setView('contact')}>Book Priority Consult</Button></div>
+                </div>
+              </div>
+              <div className="py-24 bg-slate-50">
+                <div className="container mx-auto px-6">
+                   <SectionHeading title="Why We Are Different" />
+                   <div className="grid md:grid-cols-3 gap-8">
+                     {[{ t: "Medical Ethics First", d: "We never recommend a procedure you don't need.", i: ShieldCheck }, { t: "Cutting-Edge Tech", d: "US-FDA approved lasers and equipment only.", i: Sparkles }, { t: "Holistic Care", d: "We treat the root cause, not just symptoms.", i: Stethoscope }].map((item, i) => (
+                       <div key={i} className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center hover:-translate-y-2 transition-transform duration-500">
+                         <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mx-auto mb-6"><item.i className="w-8 h-8" /></div>
+                         <h3 className="text-xl font-bold text-slate-900 mb-4">{item.t}</h3>
+                         <p className="text-slate-600">{item.d}</p>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+              </div>
+              <div className="py-24 container mx-auto px-6 text-center">
+                <h2 className="text-4xl font-serif text-slate-900 mb-8">Frequently Asked Questions</h2>
+                <div className="max-w-3xl mx-auto space-y-4 text-left">
+                  {FAQS.map((faq, i) => (
+                    <div key={i} className="bg-slate-50 rounded-2xl p-6 hover:bg-white border border-transparent hover:border-slate-200 hover:shadow-lg transition-all cursor-pointer">
+                      <h4 className="font-bold text-slate-900 text-lg mb-2 flex items-center gap-3"><span className="text-teal-600">Q.</span> {faq.q}</h4>
+                      <p className="text-slate-600 pl-8">{faq.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="font-sans text-slate-800 antialiased bg-white selection:bg-teal-200 selection:text-teal-900">
+              <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-slate-200/50 py-3' : 'bg-transparent py-6'}`}>
+                <div className="container mx-auto px-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')}>
+                     <img src={BUSINESS_INFO.logo_path} alt="Feather Touch Logo" className="h-12 w-auto object-contain drop-shadow-sm group-hover:scale-105 transition-transform" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                     <div className="hidden flex-col">
+                       <h1 className="text-xl font-serif font-bold text-slate-900 tracking-tight leading-none group-hover:text-teal-700 transition-colors">Feather Touch</h1>
+                       <p className="text-[10px] text-slate-500 tracking-[0.2em] uppercase font-medium">Dermatology</p>
+                     </div>
+                  </div>
+                  <nav className="hidden lg:flex items-center bg-white/50 backdrop-blur-md px-8 py-3 rounded-full border border-white/50 shadow-sm">
+                    {['Home', 'Services', 'About', 'Contact'].map((item) => (
+                      <button key={item} onClick={() => setView(item.toLowerCase())} className={`px-5 py-1 text-sm font-medium transition-all hover:text-teal-700 relative ${view === item.toLowerCase() ? 'text-teal-800 font-bold' : 'text-slate-600'}`}>{item}{view === item.toLowerCase() && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-teal-600 rounded-full"></span>}</button>
+                    ))}
+                    <button onClick={() => setView('landing')} className="ml-4 px-4 py-1.5 bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider rounded-full hover:bg-amber-200 transition-colors">Special Offer</button>
+                  </nav>
+                  <div className="hidden lg:flex items-center gap-3">
+                     <button onClick={openCall} className="w-11 h-11 rounded-full bg-slate-50 flex items-center justify-center text-slate-700 hover:bg-teal-50 hover:text-teal-700 hover:scale-110 transition-all border border-slate-200"><Phone className="w-5 h-5" /></button>
+                     <button onClick={openWhatsApp} className="w-11 h-11 rounded-full bg-green-50 flex items-center justify-center text-green-600 hover:bg-green-100 hover:scale-110 transition-all border border-green-100"><MessageCircle className="w-5 h-5" /></button>
+                     <Button onClick={() => setView('contact')} className="px-6 py-2.5 text-sm h-11">Book Now</Button>
+                  </div>
+                  <button className="lg:hidden p-2 text-slate-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}</button>
+                </div>
+                {mobileMenuOpen && (
+                  <div className="absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-2xl p-6 flex flex-col animate-in slide-in-from-top-10 duration-300">
+                     {['Home', 'Services', 'About', 'Contact', 'Landing'].map((item) => (
+                      <button key={item} onClick={() => { setView(item.toLowerCase()); setMobileMenuOpen(false); }} className="text-left text-xl font-serif text-slate-800 py-4 border-b border-slate-100 first:pt-0">{item === 'Landing' ? 'Special Offers' : item}</button>
+                    ))}
+                    <div className="flex gap-4 mt-6"><Button onClick={openWhatsApp} variant="secondary" className="flex-1 justify-center py-3">WhatsApp</Button></div>
+                  </div>
+                )}
+              </header>
+
+              <main className="min-h-screen">
+                {view === 'home' && <HomeView />}
+                {view === 'services' && (
+                  <div className="pt-32 pb-24 bg-slate-50 min-h-screen">
+                    <div className="container mx-auto px-6">
+                      <SectionHeading title="Treatment Menu" subtitle="Expert care for every skin concern." />
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {SERVICES.map((s) => (
+                          <div key={s.id} onClick={() => { setActiveService(s); setView('service-detail'); }} className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer group border border-slate-100">
+                            <div className="h-56 overflow-hidden"><img src={s.image} alt={s.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" /></div>
+                            <div className="p-8">
+                              <h3 className="text-xl font-serif font-bold text-slate-900 mb-3 group-hover:text-teal-700 transition-colors">{s.title}</h3>
+                              <p className="text-slate-600 mb-6 line-clamp-2">{s.shortDesc}</p>
+                              <span className="text-teal-600 font-bold text-sm uppercase tracking-wider flex items-center">View Details <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" /></span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {view === 'service-detail' && <ServiceDetailView />}
+                {view === 'about' && (
+                  <div className="pt-32 pb-24 bg-white min-h-screen">
+                    <div className="container mx-auto px-6 max-w-4xl text-center">
+                       <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-8 border-4 border-teal-50 shadow-xl"><img src="https://images.unsplash.com/photo-1559839734-2b71ea86065d?auto=format&fit=crop&q=80&w=1000" className="w-full h-full object-cover" /></div>
+                       <h1 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">Dr. Vaishali Lokhande</h1>
+                       <p className="text-xl text-slate-600 leading-relaxed mb-12">"My practice is built on a foundation of medical integrity. I don't sell 'perfect skin'—I provide the science and care to help you achieve your healthiest skin."</p>
+                       <div className="grid md:grid-cols-3 gap-8 text-left mb-16">
+                         <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100"><Award className="w-8 h-8 text-amber-500 mb-4" /><h3 className="font-bold text-lg mb-2">Recognition</h3><p className="text-slate-600 text-sm">Winner of the Inspirational Super Women Award for medical excellence.</p></div>
+                         <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100"><ShieldCheck className="w-8 h-8 text-teal-600 mb-4" /><h3 className="font-bold text-lg mb-2">Qualifications</h3><p className="text-slate-600 text-sm">MBBS, DDV with specialized training in Laser Aesthetics and Dermatosurgery.</p></div>
+                         <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100"><Sparkles className="w-8 h-8 text-purple-500 mb-4" /><h3 className="font-bold text-lg mb-2">Philosophy</h3><p className="text-slate-600 text-sm">Less is more. We prioritize skin barrier health over aggressive treatments.</p></div>
+                       </div>
+                       <h3 className="text-2xl font-serif mb-8">Our Clinic</h3>
+                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                         {CLINIC_IMAGES.map((src, i) => (
+                           <div key={i} className="rounded-2xl overflow-hidden shadow-lg h-40 bg-slate-200 relative"><img src={src} alt={`Clinic Interior ${i+1}`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.style.backgroundColor = '#e2e8f0'; }} /></div>
+                         ))}
+                       </div>
+                    </div>
+                  </div>
+                )}
+                {view === 'contact' && <ContactView />}
+                {view === 'landing' && <LandingPageView />}
+              </main>
+
+              <footer className="bg-slate-900 text-slate-400 py-20 border-t border-slate-800">
+                <div className="container mx-auto px-6">
+                  <div className="grid md:grid-cols-4 gap-12 mb-16">
+                    <div className="col-span-1 md:col-span-2">
+                      <div className="flex items-center gap-3 mb-6 text-white"><img src={BUSINESS_INFO.logo_path} alt="Feather Touch Logo" className="h-10 w-auto brightness-0 invert opacity-90" /><span className="font-serif text-xl font-bold">Feather Touch</span></div>
+                      <p className="mb-8 max-w-sm leading-relaxed text-slate-500">Pune's premier destination for clinical and aesthetic dermatology. Where science meets luxury.</p>
+                      <div className="flex gap-4">
+                        <a href="https://www.instagram.com/feathertouchpune/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 hover:text-white transition-colors cursor-pointer"><Instagram className="w-5 h-5" /></a>
+                        <a href="https://www.facebook.com/vaishalilokhandepune" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"><Facebook className="w-5 h-5" /></a>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-xs">Treatments</h4>
+                      <ul className="space-y-3 text-sm">{SERVICES.slice(0, 5).map(s => (<li key={s.id} onClick={() => { setActiveService(s); setView('service-detail'); }} className="hover:text-teal-400 cursor-pointer transition-colors">{s.title}</li>))}</ul>
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-xs">Clinic</h4>
+                      <ul className="space-y-3 text-sm">
+                        <li onClick={() => setView('about')} className="hover:text-teal-400 cursor-pointer transition-colors">About Doctor</li>
+                        <li onClick={() => setView('contact')} className="hover:text-teal-400 cursor-pointer transition-colors">Contact & Hours</li>
+                        <li onClick={() => setView('landing')} className="text-amber-500 hover:text-amber-400 cursor-pointer transition-colors">Special Offers</li>
+                        <li className="pt-4 flex items-center gap-2"><MapPin className="w-4 h-4" /> Koregaon Park, Pune</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600"><p>© 2024 Feather Touch Dermatology. All rights reserved.</p><div className="flex gap-6 mt-4 md:mt-0"><span>Privacy Policy</span><span>Terms of Service</span><span>Medical Disclaimer</span></div></div>
+                </div>
+              </footer>
+              <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-lg border-t border-slate-200 p-4 z-40 flex gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe"><button onClick={openCall} className="flex-1 bg-slate-100 text-slate-900 rounded-xl py-3.5 font-bold flex items-center justify-center active:scale-95 transition-transform"><Phone className="w-5 h-5 mr-2" /> Call</button><button onClick={() => setView('contact')} className="flex-[2] bg-teal-700 text-white rounded-xl py-3.5 font-bold flex items-center justify-center shadow-lg shadow-teal-700/20 active:scale-95 transition-transform">Book Appointment</button></div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
